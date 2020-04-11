@@ -12,3 +12,9 @@ sp-core = "2.0.0-alpha.5"
 clap = "2.33.0"
 async-std = { version = "1.5" }
 
+# SDS011
+serialport = "3.3.0"
+libudev-sys = "0.1.4"
+# serial = "0.4.0"
+arrayref = "0.3.4"
+error-chain = "0.11.0"
