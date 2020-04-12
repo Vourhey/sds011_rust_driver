@@ -1,6 +1,7 @@
 use serialport::{SerialPort, SerialPortSettings, DataBits, FlowControl, Parity, StopBits};
 use std::time::Duration;
 use std::mem::transmute;
+use std::iter::FromIterator;
 
 
 const HEAD: u8 = b'\xaa';
@@ -27,6 +28,19 @@ const QUERY_CMD: u8 = b'\x04';
 // The work period command ID
 const WORK_PERIOD_CMD: u8 = b'\x08';
 
+// TODO
+// Example from python
+/*
+// report
+Writing: b'\xaa\xb4\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\x02\xab'
+Read: b'\xaa\xc5\x02\x01\x01\x00\xc4\xa6n\xab'
+// query
+Writing: b'\xaa\xb4\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\x02\xab'
+Read: b"\xaa\xc0\x1d\x00'\x00\xc4\xa6\xae\xab"
+23:16:39: (2.9, 3.9)
+Writing: b'\xaa\xb4\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\x02\xab'
+Read: b"\xaa\xc0\x1d\x00'\x00\xc4\xa6\xae\xab"
+*/
 
 pub(crate) struct SDS011 {
     port: Box<dyn SerialPort>,
@@ -118,8 +132,7 @@ impl SDS011 {
         cmd.push(id1);
         cmd.push(id2);
 
-        let mut ch = cmd.clone();
-        ch.truncate(cmd.len()-2);
+        let mut ch = Vec::from_iter(cmd[2..].iter().cloned());
         let mut checksum: u32 = 0;
         for i in ch {
             checksum += i as u32;
@@ -131,6 +144,7 @@ impl SDS011 {
     }
 
     fn execute(&mut self, cmd_bytes: &Vec<u8>) {
+        println!("{:?}", cmd_bytes);
         self.port.write_all(cmd_bytes).expect("Couldn't write");
     }
 
@@ -138,20 +152,29 @@ impl SDS011 {
         let mut buf = [0u8; 10];
         let res = self.port.read_exact(buf.as_mut());
 
-        println!("{:?}", String::from_utf8_lossy(&buf));
-
+        println!("{:?}", buf.to_vec());
+/*
         match res {
             Err(e) =>println!("{:?}", e),
             Ok(v) => println!("{:?}", String::from_utf8_lossy(&buf)),
-        }
+        } */
 
 
         let data = &buf[2..8];
 
+        println!("Before first none {:?}", data.len());
         if data.len() == 0 { return None; }
 
-        let check: u8 = data.iter().sum::<u8>() & 255;
-        if check != buf[8] { return None; }
+        let mut checksum: u32 = 0;
+        for i in data.iter() {
+            checksum += *i as u32;
+        }
+        println!("{:?}", checksum);
+        checksum = checksum & 255;
+
+        // let check: u8 = data.iter().sum::<u8>() & 255;
+        println!("Before second none {:?}", checksum);
+        if checksum as u8 != buf[8] { return None; }
 
         Some(buf)
     }

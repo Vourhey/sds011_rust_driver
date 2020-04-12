@@ -51,7 +51,7 @@ fn main() {
 
     let mut nova = SDS011::new(device);
 
-    nova.set_work_period(1);
+    nova.set_work_period(5);
 
     loop {
         match nova.query() {
