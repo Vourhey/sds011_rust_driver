@@ -11,10 +11,17 @@ robonomics-protocol = { git = "https://github.com/airalab/robonomics", rev = "40
 sp-core = "2.0.0-alpha.5"
 clap = "2.33.0"
 async-std = { version = "1.5" }
+tempfile = "3.1.0"
+serde_json = "1.0"
+serde = "1.0.106"
+# ipfs = { git = "https://github.com/ipfs-rust/rust-ipfs/", rev = "493c26d20a9b516e198604c113359d9e294f37d8" }
+ipfs-api = "0.7.1"
+hyper = "0.13"
+tokio = { version = "0.2", features = ["full"] }
+pinata-sdk = "0.1.1"
 
 # SDS011
 serialport = "3.3.0"
 libudev-sys = "0.1.4"
-serial = "0.4.0"
 arrayref = "0.3.4"
 error-chain = "0.11.0"
